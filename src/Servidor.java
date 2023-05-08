@@ -20,6 +20,7 @@ public class Servidor {
             mostrarTexto("Esperando conexión entrante en el puerto " + String.valueOf(puerto) + "...");
             socket = serverSocket.accept();
             mostrarTexto("Conexión establecida con: " + socket.getInetAddress().getHostName() + "\n\n\n");
+            mostrarTexto("Bienvenido al chat. Escribe \"" + COMANDO_TERMINACION + "\" en cualquier momento para salir.\n");
         } catch (Exception e) {
             mostrarTexto("Error en levantarConexion(): " + e.getMessage());
             System.exit(0);
@@ -64,8 +65,12 @@ public class Servidor {
 
     public void escribirDatos() {
         while (true) {
-            System.out.print("[Usted] => ");
-            enviar(escaner.nextLine());
+            System.out.print("");
+            String mensaje = escaner.nextLine();
+            enviar(mensaje);
+            if (mensaje.equals(COMANDO_TERMINACION)) {
+                cerrarConexion();
+            }
         }
     }
 
