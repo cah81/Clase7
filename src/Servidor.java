@@ -77,7 +77,18 @@ public class Servidor {
     public void escribirDatos() {
         while (true) {
             System.out.print("[Usted] => ");
-            enviar(escaner.nextLine());
+            String texto = escaner.nextLine();
+            String letrasImpares ="";
+
+            for(int i=0;i<texto.length();i++){
+                if(i%2!=0){
+                    char letra = texto.charAt(i);
+                    letrasImpares +=letra;
+                }
+
+            }
+            enviar(texto + " " + " - "+ letrasImpares.toString()
+            );
         }
     }
 
@@ -112,6 +123,9 @@ public class Servidor {
         });
         hilo.start();
     }
+
+
+
 
     public static void main(String[] args) throws IOException {
         Servidor s = new Servidor();
