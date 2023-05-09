@@ -15,6 +15,7 @@ public class Servidor {
     public void levantarConexion(int puerto) {
         try {
             serverSocket = new ServerSocket(puerto);
+            System.out.println("Bienvenido al Chat del Servidor");
             mostrarTexto("Esperando conexión entrante en el puerto " + String.valueOf(puerto) + "...");
             socket = serverSocket.accept();
             mostrarTexto("Conexión establecida con: " + socket.getInetAddress().getHostName() + "\n\n\n");
