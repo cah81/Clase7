@@ -7,15 +7,14 @@ public class Cliente {
     private DataOutputStream bufferDeSalida = null;
     Scanner teclado = new Scanner(System.in);
     final String COMANDO_TERMINACION = "salir()";
-    boolean conectado = false;
 
     public void levantarConexion(String ip, int puerto) {
         try {
             socket = new Socket(ip, puerto);
-            mostrarTexto("Conectado a :" + socket.getInetAddress().getHostName());
-            conectado = true;
+            mostrarTexto("\nConectado a :" + socket.getInetAddress().getHostName()+ " que es el sevidor de este chat");
+            mostrarTexto("\nPara terminar la conversaci�n escribe \"salir()\"");
         } catch (Exception e) {
-            mostrarTexto("Excepción al levantar conexión: " + e.getMessage());
+            mostrarTexto("Excepci�n al levantar conexi�n: " + e.getMessage());
             System.exit(0);
         }
     }
@@ -24,14 +23,14 @@ public class Cliente {
         System.out.println(s);
     }
 
-    public void abrirFlujos() {
+    public void abrirFlujos(String user, String pass) {
         try {
             bufferDeEntrada = new DataInputStream(socket.getInputStream());
             bufferDeSalida = new DataOutputStream(socket.getOutputStream());
             bufferDeSalida.flush();
-
-
-
+            bufferDeSalida.writeUTF(user);
+            bufferDeSalida.writeUTF(pass);
+            bufferDeSalida.flush();
         } catch (IOException e) {
             mostrarTexto("Error en la apertura de flujos");
         }
@@ -51,7 +50,7 @@ public class Cliente {
             bufferDeEntrada.close();
             bufferDeSalida.close();
             socket.close();
-            mostrarTexto("Conexión terminada");
+            mostrarTexto("Conexi�n terminada");
         } catch (IOException e) {
             mostrarTexto("IOException on cerrarConexion()");
         }finally{
@@ -59,14 +58,13 @@ public class Cliente {
         }
     }
 
-    public void ejecutarConexion(String ip, int puerto) {
+    public void ejecutarConexion(String ip, int puerto, String user, String pass) {
         Thread hilo = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     levantarConexion(ip, puerto);
-                    abrirFlujos();
-                    mostrarTexto("Conectado al Servidor. Escribe 'salir()' para terminar la conexión.");
+                    abrirFlujos(user, pass);
                     recibirDatos();
                 } finally {
                     cerrarConexion();
@@ -94,8 +92,6 @@ public class Cliente {
             entrada = teclado.nextLine();
             if(entrada.length() > 0)
                 enviar(entrada);
-            else
-                mostrarTexto("No se puede enviar un mensaje vacío.");
         }
     }
 
@@ -109,7 +105,15 @@ public class Cliente {
         mostrarTexto("Puerto: [5050 por defecto] ");
         String puerto = escaner.nextLine();
         if (puerto.length() <= 0) puerto = "5050";
-        cliente.ejecutarConexion(ip, Integer.parseInt(puerto));
+        
+        mostrarTexto("Ingresa tu usuario ");
+        String user = escaner.nextLine();
+
+
+        mostrarTexto("Ingresa tu contrase�a  ");
+        String pass = escaner.nextLine();
+
+        cliente.ejecutarConexion(ip, Integer.parseInt(puerto), user, pass);
         cliente.escribirDatos();
     }
 }

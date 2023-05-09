@@ -9,25 +9,17 @@ public class Servidor {
     private ServerSocket serverSocket;
     private DataInputStream bufferDeEntrada = null;
     private DataOutputStream bufferDeSalida = null;
-    Scanner escaner = new Scanner(System.in);
-    final String COMANDO_TERMINACION = "salir()";
-
-    private final String USUARIO = "usuario";
-    private final String CONTRASENA = "contrasena";
+    private Scanner escaner = new Scanner(System.in);
+    private final String COMANDO_TERMINACION = "salir()";
+    private final String USER_CORRECTO = "admin";
+    private final String PASS_CORRECTO = "admin";
 
     public void levantarConexion(int puerto) {
         try {
             serverSocket = new ServerSocket(puerto);
-            System.out.println("Bienvenido al Chat del Servidor");
-            mostrarTexto("Esperando conexi贸n entrante en el puerto " + String.valueOf(puerto) + "...");
+            mostrarTexto("\nEsperando conexi髇 entrante en el puerto " + String.valueOf(puerto) + "...");
             socket = serverSocket.accept();
-            mostrarTexto("Conexi贸n establecida con: " + socket.getInetAddress().getHostName() + "\n\n\n");
-            mostrarTexto("Bienvenido al chat. Escribe \"" + COMANDO_TERMINACION + "\" en cualquier momento para salir.\n");
-
-
-
-
-
+            mostrarTexto("\nConexi髇 establecida con: " + socket.getInetAddress().getHostName() + "\n\n\n");
         } catch (Exception e) {
             mostrarTexto("Error en levantarConexion(): " + e.getMessage());
             System.exit(0);
@@ -38,6 +30,18 @@ public class Servidor {
             bufferDeEntrada = new DataInputStream(socket.getInputStream());
             bufferDeSalida = new DataOutputStream(socket.getOutputStream());
             bufferDeSalida.flush();
+            String user = (String) bufferDeEntrada.readUTF();
+            String pass = (String) bufferDeEntrada.readUTF();
+            mostrarTexto("User del cliente: "+user+ "\n\n\n");
+            mostrarTexto("Pass del cliente: "+pass+ "\n\n\n");
+            
+            if(!user.equals(USER_CORRECTO)|| !pass.equals(PASS_CORRECTO)) {
+            	mostrarTexto( "Se cierra la conexi髇 con el cliente por datos de acceso err髇eos\n\n\n");
+            	enviar("Usuario y/o contrase馻 incorrectos");
+            	cerrarConexion();
+            }else {
+            	enviar("Bienvenid@");
+            }
         } catch (IOException e) {
             mostrarTexto("Error en la apertura de flujos");
         }
@@ -72,12 +76,8 @@ public class Servidor {
 
     public void escribirDatos() {
         while (true) {
-            System.out.print("");
-            String mensaje = escaner.nextLine();
-            enviar(mensaje);
-            if (mensaje.equals(COMANDO_TERMINACION)) {
-                cerrarConexion();
-            }
+            System.out.print("[Usted] => ");
+            enviar(escaner.nextLine());
         }
     }
 
@@ -87,9 +87,9 @@ public class Servidor {
             bufferDeSalida.close();
             socket.close();
         } catch (IOException e) {
-            mostrarTexto("Excepci贸n en cerrarConexion(): " + e.getMessage());
+          mostrarTexto("Excepci髇 en cerrarConexion(): " + e.getMessage());
         } finally {
-            mostrarTexto("Conversaci贸n finalizada....");
+            mostrarTexto("Conversaci髇 finalizada....");
             System.exit(0);
 
         }
@@ -112,12 +112,6 @@ public class Servidor {
         });
         hilo.start();
     }
-
-
-
-
-
-
 
     public static void main(String[] args) throws IOException {
         Servidor s = new Servidor();
