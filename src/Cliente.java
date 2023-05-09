@@ -7,11 +7,13 @@ public class Cliente {
     private DataOutputStream bufferDeSalida = null;
     Scanner teclado = new Scanner(System.in);
     final String COMANDO_TERMINACION = "salir()";
+    boolean conectado = false;
 
     public void levantarConexion(String ip, int puerto) {
         try {
             socket = new Socket(ip, puerto);
             mostrarTexto("Conectado a :" + socket.getInetAddress().getHostName());
+            conectado = true;
         } catch (Exception e) {
             mostrarTexto("Excepción al levantar conexión: " + e.getMessage());
             System.exit(0);
@@ -27,6 +29,9 @@ public class Cliente {
             bufferDeEntrada = new DataInputStream(socket.getInputStream());
             bufferDeSalida = new DataOutputStream(socket.getOutputStream());
             bufferDeSalida.flush();
+
+
+
         } catch (IOException e) {
             mostrarTexto("Error en la apertura de flujos");
         }
@@ -61,6 +66,7 @@ public class Cliente {
                 try {
                     levantarConexion(ip, puerto);
                     abrirFlujos();
+                    mostrarTexto("Conectado al Servidor. Escribe 'salir()' para terminar la conexión.");
                     recibirDatos();
                 } finally {
                     cerrarConexion();
@@ -88,6 +94,8 @@ public class Cliente {
             entrada = teclado.nextLine();
             if(entrada.length() > 0)
                 enviar(entrada);
+            else
+                mostrarTexto("No se puede enviar un mensaje vacío.");
         }
     }
 

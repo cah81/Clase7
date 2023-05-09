@@ -12,6 +12,9 @@ public class Servidor {
     Scanner escaner = new Scanner(System.in);
     final String COMANDO_TERMINACION = "salir()";
 
+    private final String USUARIO = "usuario";
+    private final String CONTRASENA = "contrasena";
+
     public void levantarConexion(int puerto) {
         try {
             serverSocket = new ServerSocket(puerto);
@@ -20,6 +23,11 @@ public class Servidor {
             socket = serverSocket.accept();
             mostrarTexto("Conexión establecida con: " + socket.getInetAddress().getHostName() + "\n\n\n");
             mostrarTexto("Bienvenido al chat. Escribe \"" + COMANDO_TERMINACION + "\" en cualquier momento para salir.\n");
+
+
+
+
+
         } catch (Exception e) {
             mostrarTexto("Error en levantarConexion(): " + e.getMessage());
             System.exit(0);
@@ -104,6 +112,12 @@ public class Servidor {
         });
         hilo.start();
     }
+
+
+
+
+
+
 
     public static void main(String[] args) throws IOException {
         Servidor s = new Servidor();
