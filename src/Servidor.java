@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.Scanner;
 
 
@@ -10,7 +11,7 @@ public class Servidor {
     private DataInputStream bufferDeEntrada = null;
     private DataOutputStream bufferDeSalida = null;
     private Scanner escaner = new Scanner(System.in);
-    private final String COMANDO_TERMINACION = "salir()";
+    private final String COMANDO_TERMINACION = "EXIT";
     private final String USER_CORRECTO = "admin";
     private final String PASS_CORRECTO = "admin";
 
@@ -30,35 +31,189 @@ public class Servidor {
             bufferDeEntrada = new DataInputStream(socket.getInputStream());
             bufferDeSalida = new DataOutputStream(socket.getOutputStream());
             bufferDeSalida.flush();
-            String user = (String) bufferDeEntrada.readUTF();
-            String pass = (String) bufferDeEntrada.readUTF();
-            mostrarTexto("User del cliente: "+user+ "\n\n\n");
-            mostrarTexto("Pass del cliente: "+pass+ "\n\n\n");
-            
-            if(!user.equals(USER_CORRECTO)|| !pass.equals(PASS_CORRECTO)) {
-            	mostrarTexto( "Se cierra la conexión con el cliente por datos de acceso erróneos\n\n\n");
-            	enviar("Usuario y/o contraseña incorrectos");
-            	cerrarConexion();
-            }else {
-            	enviar("Bienvenid@");
+
+            String comando = bufferDeEntrada.readUTF();
+            if(comando.startsWith("login")){
+                String[] partes = comando.split(" ");
+                if(partes.length ==3){
+                    String user= partes[1];
+                    String pass = partes[2];
+                    mostrarTexto("User del cliente: "+user+ "\n\n\n");
+                    mostrarTexto("Pass del cliente: "+pass+ "\n\n\n");
+                    if(!user.equals(USER_CORRECTO)|| !pass.equals(PASS_CORRECTO)){
+                        mostrarTexto( "Se cierra la conexión con el cliente por datos de acceso erróneos\n\n\n");
+                        enviar("Usuario y/o contraseña incorrectos");
+                        cerrarConexion();
+                    }else{
+                        enviar("Bienvenid@" + "," +" contínua usando los comandos permitidos (login, reverse, avg, sum, count o numbers) o escribe \"EXIT\" para salir.");
+
+                    }
+                }
+
             }
+
+
+
+
+            //String user = (String) bufferDeEntrada.readUTF();
+           // String pass = (String) bufferDeEntrada.readUTF();
+           // mostrarTexto("User del cliente: "+user+ "\n\n\n");
+          //  mostrarTexto("Pass del cliente: "+pass+ "\n\n\n");
+            
+//            if(!user.equals(USER_CORRECTO)|| !pass.equals(PASS_CORRECTO)) {
+//            	mostrarTexto( "Se cierra la conexión con el cliente por datos de acceso erróneos\n\n\n");
+//            	enviar("Usuario y/o contraseña incorrectos");
+//            	cerrarConexion();
+//            }else {
+//            	enviar("Bienvenid@");
+//            }
         } catch (IOException e) {
             mostrarTexto("Error en la apertura de flujos");
         }
     }
 
-    public void recibirDatos() {
+
+
+
+    public void
+    recibirDatos() {
         String st = "";
         try {
             do {
                 st = (String) bufferDeEntrada.readUTF();
-                mostrarTexto("\n[Cliente] => " + st);
+                funciones(st);
+
+
+                //mostrarTexto("\n[Cliente] => " + st);
                 System.out.print("\n[Usted] => ");
             } while (!st.equals(COMANDO_TERMINACION));
         } catch (IOException e) {
             cerrarConexion();
         }
     }
+
+    public void funciones(String comando){
+
+        if(comando.startsWith("login")){
+            validarLogin(comando);
+        }
+        if (comando.startsWith("reverse ")) {
+            reverseFrase(comando);
+        }
+        if (comando.startsWith("avg ")) {
+            promedio(comando);
+        }
+        if (comando.startsWith("sum ")) {
+            suma(comando);
+        }
+        if(comando.startsWith("count ")){
+            contarDigitos(comando);
+        }
+        if(comando.startsWith("numbers ")){
+            contarNumerosEnFrase(comando);
+        }
+    }
+
+
+
+
+
+    public void validarLogin(String comando){
+        String[] partes = comando.split(" ");
+        if(partes.length ==3){
+            String user= partes[1];
+            String pass = partes[2];
+            mostrarTexto("User del cliente: "+user+ "\n\n\n");
+            mostrarTexto("Pass del cliente: "+pass+ "\n\n\n");
+            if(!user.equals(USER_CORRECTO)|| !pass.equals(PASS_CORRECTO)){
+                mostrarTexto( "Se cierra la conexión con el cliente por datos de acceso erróneos\n\n\n");
+                enviar("Usuario y/o contraseña incorrectos");
+            }else{
+                enviar("Bienvenid@" );
+
+            }
+        }
+
+
+    }
+
+    public void reverseFrase(String comando){
+        String output;
+        String frase = comando.substring(8);
+        output = new StringBuilder(frase).reverse().toString();
+        mostrarTexto(output);
+        enviar(output);
+
+    }
+    public void promedio(String comando){
+        String output;
+        String[] partes = comando.split(" ");
+        double suma=0;
+        int cantNumeros = partes.length -1;
+        //calcular numeros
+        for(int i=1;i< partes.length;i++){
+            double numero = Double.parseDouble(partes[i]);
+            suma += numero;
+        }
+        //calcula promedio
+        double promedio = suma/cantNumeros;
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        output = decimalFormat.format(promedio);
+
+        mostrarTexto(output);
+        enviar(output);
+
+    }
+
+    public void suma(String comando){
+        String output;
+        String[] partes = comando.split(" ");
+        double suma=0;
+        int cantNumeros = partes.length -1;
+        for(int i=1;i< partes.length;i++){
+            double numero = Double.parseDouble(partes[i]);
+            suma += numero;
+        }
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        output = decimalFormat.format(suma);
+        mostrarTexto(output);
+        enviar(output);
+
+    }
+
+    public void contarDigitos(String comando){
+        String output;
+        String[] partes = comando.split(" ");
+        int numero = Integer.parseInt(partes[1]);
+        int cantidadDigitos = String.valueOf(numero).length();
+        output =String.valueOf(cantidadDigitos);
+        mostrarTexto(output);
+        enviar("tiene un total de " + output + " digitos");
+
+    }
+
+    public void contarNumerosEnFrase(String comando){
+
+        String output;
+        String frase = comando.substring(8);
+        int contador=0;
+        for(int i=0;i<frase.length();i++){
+            char caracter = frase.charAt(i);
+            if(Character.isDigit(caracter)){
+                contador++;
+            }
+        }
+        mostrarTexto("la frase tiene "+ contador + " numeros");
+        enviar("la frase tiene "+ contador + " numeros");
+
+    }
+
+
+
+
+
+
+
 
 
     public void enviar(String s) {
